@@ -1,10 +1,17 @@
 use ureq::OrAnyStatus;
 
 fn print_help() {
+    println!("Usage: rex [options...]");
     let message = vec![
-        "Usage: rex [options...]",
-        " -u url, like https://github.com/",
-    ].join("\n");
+        (vec!["-u", "--url"], "url like \"https://github.com/\""),
+    ].into_iter()
+        .map(|(args, message)| {
+            assert!(!args.is_empty());
+            assert!(!message.is_empty());
+            return format!("{:<16}| {message}", args.join(", "));
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
     println!("{message}");
 }
 

@@ -1,6 +1,11 @@
 [package]
 name = "rex"
-version = "0.1.0"
+description = "Http REquest eXtension."
+authors = ["Stanley Wintergreen <kepocnhh@gmail.com>"]
+readme = "README.md"
+license-file = "LICENSE"
+repository = "https://github.com/kepocnhh/rex"
+version = "0.1.1"
 publish = false
 edition = "2021"
 rust-version = "1.66.0"

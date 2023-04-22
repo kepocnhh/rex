@@ -1,53 +1,26 @@
 use ureq::OrAnyStatus;
 
-fn print_help() {
-    println!("Usage: rex [options...]");
-    let message = vec![
-        (vec!["-u", "--url"], "url like \"https://github.com/\""),
-    ].into_iter()
-        .map(|(args, message)| {
-            assert!(!args.is_empty());
-            assert!(!message.is_empty());
-            return format!("{:<16}| {message}", args.join(", "));
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
-    println!("{message}");
-}
-
-fn err<T>(message: &str) -> Result<T, String> {
-    return Err(String::from(message));
-}
-
-fn ok<T>(message: &str) -> Result<String, T> {
-    return Ok(String::from(message));
-}
-
-fn insert_filled_or(actual: &mut Option<String>, tag: &str, value: String) -> Result<(), String> {
+fn insert_filled_or(actual: &mut Option<String>, tag: &str, value: String) -> Result<(), Error> {
     return insert_or(actual, tag, filled(tag, value)?);
 }
 
-fn insert_or<T>(actual: &mut Option<T>, tag: &str, value: T) -> Result<(), String> {
+fn insert_or<T>(actual: &mut Option<T>, tag: &str, value: T) -> Result<(), Error> {
     if actual.is_some() {
-        return Err(format!("Value \"{tag}\" is already set!"));
+        return Error::Before(format!("Value \"{tag}\" is already set!")).to_result();
     }
     let _ = actual.insert(value);
     return Ok(());
 }
 
-fn filled(tag: &str, it: String) -> Result<String, String> {
+fn filled(tag: &str, it: String) -> Result<String, Error> {
     if it.is_empty() {
-        return Err(format!("Value \"{tag}\" is empty!"));
+        return Error::Before(format!("Value \"{tag}\" is empty!")).to_result();
     }
     return Ok(it);
 }
 
-fn call(request: ureq::Request) -> Result<ureq::Response, String> {
-    return err("Unknown error!")
-}
-
-fn ureq_error(error: ureq::Transport) -> String {
-    return vec![
+fn ureq_error(error: ureq::Transport) -> Error {
+    let message = vec![
         String::from("Transport error!"),
         format!("kind: {}", error.kind()),
         String::from(error.message().unwrap_or("")),
@@ -55,35 +28,49 @@ fn ureq_error(error: ureq::Transport) -> String {
         .filter(|it| !it.is_empty())
         .collect::<Vec<_>>()
         .join("\n");
+    return Error::After(message);
 }
 
-fn io_error(error: std::io::Error) -> String {
-    return format!("IO error: {error:?}");
+fn io_error(error: std::io::Error) -> Error {
+    return Error::After(format!("IO error: {error:?}"));
 }
 
-pub fn on_args(args: &[String]) -> Result<String, String> {
+pub enum Error {
+    Before(String),
+    After(String),
+}
+
+impl Error {
+    fn to_result<T>(self) -> Result<T, Error> {
+        return Err(self);
+    }
+
+    fn before(message: &str) -> Error {
+        return Error::Before(String::from(message));
+    }
+}
+
+pub fn on_args(args: &[String]) -> Result<String, Error> {
     if args.is_empty() {
-        print_help();
-        return err("No arguments!");
+        return Error::before("No arguments!").to_result();
     }
     if args.len() % 2 != 0 {
-        print_help();
-        return err("Arguments error!");
+        return Error::before("Arguments error!").to_result();
     }
     let mut url: Option<String> = None;
     for i in 0..(args.len() / 2) {
         let arg = args[i].as_str();
         match arg {
-            "-u" => {
+            "-u" | "--url" => {
                 // todo parse url
                 insert_filled_or(&mut url, arg, args[i + 1].clone())?;
             }
             _ => {
-                return Err(format!("Unknown arg {arg}!"));
+                return Error::Before(format!("Unknown arg {arg}!")).to_result();
             }
         }
     }
-    let url = url.ok_or("Url is empty!")?;
+    let url = url.ok_or_else(|| Error::before("Url is empty!"))?;
     let agent: ureq::Agent = ureq::AgentBuilder::new().build();
     let method = "GET"; // todo
     let response = agent.request(method, url.as_str())

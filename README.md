@@ -7,3 +7,8 @@ Http REquest eXtension.
 - [ ] timeout
 - [ ] body
 - [ ] method
+
+Run
+```
+cargo run -- -u foo
+```

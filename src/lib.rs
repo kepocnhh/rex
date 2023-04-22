@@ -1,7 +1,11 @@
 use ureq::OrAnyStatus;
 
 fn print_help() {
-    println!("Usage: rex [options...]");
+    let message = vec![
+        "Usage: rex [options...]",
+        " -u url, like https://github.com/",
+    ].join("\n");
+    println!("{message}");
 }
 
 fn err<T>(message: &str) -> Result<T, String> {
@@ -13,16 +17,12 @@ fn ok<T>(message: &str) -> Result<String, T> {
 }
 
 fn insert_filled_or(actual: &mut Option<String>, tag: &str, value: String) -> Result<(), String> {
-    if actual.is_some() {
-        return Err(format!("Value \"{tag}\" is already set!"));
-    }
-    let _ = actual.insert(filled(tag, value)?);
-    return Ok(());
+    return insert_or(actual, tag, filled(tag, value)?);
 }
 
-fn insert_or(actual: &mut Option<String>, value: String) -> Result<(), String> {
+fn insert_or<T>(actual: &mut Option<T>, tag: &str, value: T) -> Result<(), String> {
     if actual.is_some() {
-        return err("Value is already set!");
+        return Err(format!("Value \"{tag}\" is already set!"));
     }
     let _ = actual.insert(value);
     return Ok(());
@@ -40,7 +40,14 @@ fn call(request: ureq::Request) -> Result<ureq::Response, String> {
 }
 
 fn ureq_error(error: ureq::Transport) -> String {
-    return format!("Transport error: {error:?}");
+    return vec![
+        String::from("Transport error!"),
+        format!("kind: {}", error.kind()),
+        String::from(error.message().unwrap_or("")),
+    ].into_iter()
+        .filter(|it| !it.is_empty())
+        .collect::<Vec<_>>()
+        .join("\n");
 }
 
 fn io_error(error: std::io::Error) -> String {
@@ -61,6 +68,7 @@ pub fn on_args(args: &[String]) -> Result<String, String> {
         let arg = args[i].as_str();
         match arg {
             "-u" => {
+                // todo parse url
                 insert_filled_or(&mut url, arg, args[i + 1].clone())?;
             }
             _ => {
@@ -75,5 +83,6 @@ pub fn on_args(args: &[String]) -> Result<String, String> {
         .call()
         .or_any_status()
         .map_err(|it| ureq_error(it))?;
+    // todo check response
     return Ok(response.into_string().map_err(|it| io_error(it))?);
 }

@@ -4,9 +4,7 @@ fn main() {
         panic!("Arguments error!");
     }
     match rex::on_args(&args[1..]) {
-        Ok(message) => {
-            println!("{message}");
-        }
+        Ok(message) => println!("{message}"),
         Err(message) => {
             println!("{message}");
             std::process::exit(1);

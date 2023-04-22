@@ -1,3 +1,5 @@
+use ureq::OrAnyStatus;
+
 fn print_help() {
     println!("Usage: rex [options...]");
 }
@@ -33,6 +35,18 @@ fn filled(tag: &str, it: String) -> Result<String, String> {
     return Ok(it);
 }
 
+fn call(request: ureq::Request) -> Result<ureq::Response, String> {
+    return err("Unknown error!")
+}
+
+fn ureq_error(error: ureq::Transport) -> String {
+    return format!("Transport error: {error:?}");
+}
+
+fn io_error(error: std::io::Error) -> String {
+    return format!("IO error: {error:?}");
+}
+
 pub fn on_args(args: &[String]) -> Result<String, String> {
     if args.is_empty() {
         print_help();
@@ -55,5 +69,11 @@ pub fn on_args(args: &[String]) -> Result<String, String> {
         }
     }
     let url = url.ok_or("Url is empty!")?;
-    return err("Unknown error!")
+    let agent: ureq::Agent = ureq::AgentBuilder::new().build();
+    let method = "GET"; // todo
+    let response = agent.request(method, url.as_str())
+        .call()
+        .or_any_status()
+        .map_err(|it| ureq_error(it))?;
+    return Ok(response.into_string().map_err(|it| io_error(it))?);
 }

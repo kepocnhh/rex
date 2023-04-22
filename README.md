@@ -1,7 +1,7 @@
 # rex
 Http REquest eXtension.
 
-- [ ] url
+- [x] url
 - [ ] output
 - [ ] code expected
 - [ ] timeout

@@ -2,22 +2,30 @@ use ureq::OrAnyStatus;
 use url::Url;
 
 trait Inserted<T> {
-    fn insert_or(&mut self, tag: &str, value: T) -> Result<(), Error>;
+    fn set_arg_or_else<F>(&mut self, tag: &str, input: String, transform: F) -> Result<(), Error> where F: FnOnce(String) -> Result<T, Error>;
+    fn set_arg_or(&mut self, tag: &str, input: String, transform: fn(String) -> T) -> Result<(), Error>;
 }
 
-impl <T> Inserted<T> for Option<T> {
-    fn insert_or(&mut self, tag: &str, value: T) -> Result<(), Error> {
+impl<T> Inserted<T> for Option<T> {
+    fn set_arg_or_else<F>(&mut self, tag: &str, input: String, transform: F) -> Result<(), Error> where F: FnOnce(String) -> Result<T, Error> {
         if self.is_some() {
             return Error::Before(format!("Value \"{tag}\" is already set!")).to_result();
         }
+        let input = filled(input, || Error::Before(format!("Value \"{tag}\" is empty!")))?;
+        let value = transform(input)?;
         let _ = self.insert(value);
         return Ok(());
     }
+
+    fn set_arg_or(&mut self, tag: &str, input: String, transform: fn(String) -> T) -> Result<(), Error> {
+        return self.set_arg_or_else(tag, input, |it| Ok(transform(it)));
+    }
 }
 
-fn filled(tag: &str, it: String) -> Result<String, Error> {
+fn filled<F, E>(it: String, on_error: F) -> Result<String, E>
+    where F: FnOnce() -> E {
     if it.is_empty() {
-        return Error::Before(format!("Value \"{tag}\" is empty!")).to_result();
+        return Err(on_error());
     }
     return Ok(it);
 }
@@ -82,7 +90,7 @@ impl Method {
         return match self {
             Method::GET => "GET",
             Method::POST => "POST",
-        }
+        };
     }
 }
 
@@ -105,14 +113,12 @@ fn get_request(args: &[String]) -> Result<Request, Error> {
         let arg = args[index].as_str();
         match arg {
             "-u" | "--url" => {
-                let input = filled(arg, args[index + 1].clone())?;
-                let value = Url::parse(&input).map_err(parse_error)?;
-                url.insert_or(arg, value)?;
+                url.set_arg_or_else(arg, args[index + 1].clone(), |input| {
+                    Url::parse(&input).map_err(parse_error)
+                })?;
             }
             "-m" | "--method" => {
-                let input = filled(arg, args[index + 1].clone())?;
-                let value = Method::from(input)?;
-                method.insert_or(arg, value)?;
+                method.set_arg_or_else(arg, args[index + 1].clone(), Method::from)?;
             }
             _ => {
                 return Error::Before(format!("Unknown arg {arg}!")).to_result();
@@ -121,7 +127,7 @@ fn get_request(args: &[String]) -> Result<Request, Error> {
     }
     let url = url.ok_or("Url is empty!").map_err(Error::before)?;
     let method = method.unwrap_or(Method::default());
-    return Ok(Request { url, method })
+    return Ok(Request { url, method });
 }
 
 pub fn on_args(args: &[String]) -> Result<String, Error> {

@@ -1,2 +1,9 @@
 # rex
-Http request extension.
+Http REquest eXtension.
+
+- [ ] url
+- [ ] output
+- [ ] code expected
+- [ ] timeout
+- [ ] body
+- [ ] method

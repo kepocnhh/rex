@@ -100,6 +100,7 @@ struct Request {
 }
 
 fn get_request(args: &[String]) -> Result<Request, Error> {
+    // todo unit test
     if args.is_empty() {
         return Error::before("No arguments!").to_result();
     }

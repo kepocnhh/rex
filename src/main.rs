@@ -2,6 +2,7 @@ fn print_help() {
     println!("Usage: rex [options...]");
     let message = vec![
         (vec!["-u", "--url"], "url like \"https://github.com/\""),
+        (vec!["-m", "--method"], "method like \"GET\",\"POST\", etc. Default is \"GET\"."),
     ].into_iter()
         .map(|(args, message)| {
             assert!(!args.is_empty());

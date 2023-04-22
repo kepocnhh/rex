@@ -1,10 +1,6 @@
 use ureq::OrAnyStatus;
 use url::Url;
 
-fn insert_filled_or(actual: &mut Option<String>, tag: &str, value: String) -> Result<(), Error> {
-    return insert_or(actual, tag, filled(tag, value)?);
-}
-
 fn insert_or<T>(actual: &mut Option<T>, tag: &str, value: T) -> Result<(), Error> {
     if actual.is_some() {
         return Error::Before(format!("Value \"{tag}\" is already set!")).to_result();

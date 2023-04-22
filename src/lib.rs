@@ -29,11 +29,11 @@ fn ureq_error(error: ureq::Transport) -> Error {
 }
 
 fn io_error(error: std::io::Error) -> Error {
-    return Error::After(format!("IO error: {error:?}"));
+    return Error::After(format!("IO error: {error}"));
 }
 
 fn parse_error(error: url::ParseError) -> Error {
-    return Error::Before(format!("Parse error: {}", error.to_string()));
+    return Error::Before(format!("Parse error: {error}"));
 }
 
 pub enum Error {

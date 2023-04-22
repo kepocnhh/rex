@@ -1,4 +1,5 @@
 use ureq::OrAnyStatus;
+use url::Url;
 
 fn insert_filled_or(actual: &mut Option<String>, tag: &str, value: String) -> Result<(), Error> {
     return insert_or(actual, tag, filled(tag, value)?);
@@ -35,6 +36,10 @@ fn io_error(error: std::io::Error) -> Error {
     return Error::After(format!("IO error: {error:?}"));
 }
 
+fn parse_error(error: url::ParseError) -> Error {
+    return Error::Before(format!("Parse error: {}", error.to_string()));
+}
+
 pub enum Error {
     Before(String),
     After(String),
@@ -57,26 +62,30 @@ pub fn on_args(args: &[String]) -> Result<String, Error> {
     if args.len() % 2 != 0 {
         return Error::before("Arguments error!").to_result();
     }
-    let mut url: Option<String> = None;
+    let mut url: Option<Url> = None;
     for i in 0..(args.len() / 2) {
         let arg = args[i].as_str();
         match arg {
             "-u" | "--url" => {
-                // todo parse url
-                insert_filled_or(&mut url, arg, args[i + 1].clone())?;
+                insert_or(
+                    &mut url,
+                    arg,
+                    Url::parse(&filled(arg, args[i + 1].clone())?)
+                        .map_err(parse_error)?
+                )?;
             }
             _ => {
                 return Error::Before(format!("Unknown arg {arg}!")).to_result();
             }
         }
     }
-    let url = url.ok_or_else(|| Error::before("Url is empty!"))?;
+    let url = url.ok_or("Url is empty!").map_err(Error::before)?;
     let agent: ureq::Agent = ureq::AgentBuilder::new().build();
     let method = "GET"; // todo
     let response = agent.request(method, url.as_str())
         .call()
         .or_any_status()
-        .map_err(|it| ureq_error(it))?;
+        .map_err(ureq_error)?;
     // todo check response
-    return Ok(response.into_string().map_err(|it| io_error(it))?);
+    return Ok(response.into_string().map_err(io_error)?);
 }

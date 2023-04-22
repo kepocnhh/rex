@@ -7,3 +7,4 @@ rust-version = "1.66.0"
 
 [dependencies]
 ureq = "2.6.2"
+url = "2.3.1"

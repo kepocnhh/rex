@@ -11,7 +11,9 @@ impl<T> Inserted<T> for Option<T> {
         if self.is_some() {
             return Error::Before(format!("Value \"{tag}\" is already set!")).to_result();
         }
-        let input = filled(input, || Error::Before(format!("Value \"{tag}\" is empty!")))?;
+        if input.is_empty() {
+            return Error::Before(format!("Value \"{tag}\" is empty!")).to_result();
+        }
         let value = transform(input)?;
         let _ = self.insert(value);
         return Ok(());

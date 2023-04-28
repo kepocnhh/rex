@@ -128,12 +128,35 @@ fn get_request(args: &[String]) -> Result<Request, Error> {
             }
         }
     }
-    let url = url.ok_or("Url is empty!").map_err(Error::before)?;
+    let url = url.ok_or("No url!").map_err(Error::before)?;
     let method = method.unwrap_or(Method::default());
     return Ok(Request { url, method });
 }
 
 pub fn on_args(args: &[String]) -> Result<String, Error> {
+    if args.len() == 1 {
+        match args[0].as_str() {
+            "-h" | "--help" => {
+                todo!();
+            }
+            "-v" | "--version" => {
+                todo!();
+            }
+            it if it.is_empty() => {
+                return Error::Before(format!("Value \"url\" is empty!")).to_result();
+            }
+            it => {
+                let url = Url::parse(&it).map_err(parse_error)?;
+                let agent: ureq::Agent = ureq::AgentBuilder::new().build();
+                let response = agent.request(Method::default().to_string(), url.as_str())
+                    .call()
+                    .or_any_status()
+                    .map_err(ureq_error)?;
+                // todo check response
+                return Ok(response.into_string().map_err(io_error)?);
+            }
+        }
+    }
     let request = get_request(args)?;
     let agent: ureq::Agent = ureq::AgentBuilder::new().build();
     let response = agent.request(request.method.to_string(), request.url.as_str())

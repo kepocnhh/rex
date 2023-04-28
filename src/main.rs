@@ -1,5 +1,10 @@
 fn print_help() {
-    println!("Usage: rex [options...]");
+    // todo help
+    // todo version
+    println!("Usage: rex {{url}}");
+    println!(" when url like \"https://github.com/\" is requested with default params");
+    println!();
+    println!("Or usage: rex [options...]");
     let message = vec![
         (vec!["-u", "--url"], "url like \"https://github.com/\""),
         (vec!["-m", "--method"], "method like \"GET\",\"POST\", etc. Default is \"GET\"."),

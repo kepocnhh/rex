@@ -1,3 +1,5 @@
+use rex::internal::entity::Error;
+
 fn print_help() {
     // todo help
     // todo version
@@ -28,12 +30,12 @@ fn main() {
         Ok(message) => println!("{message}"),
         Err(it) => {
             match it {
-                rex::Error::Before(message) => {
+                Error::Before(message) => {
                     println!("{message}\n");
                     print_help();
                     std::process::exit(1);
                 }
-                rex::Error::After(message) => {
+                Error::After(message) => {
                     println!("{message}");
                     std::process::exit(2);
                 }

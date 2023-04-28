@@ -1,8 +1,19 @@
 use url::Url;
 
 pub enum Success {
+    Action(Action),
     Output(String),
     Silent,
+}
+
+impl Success {
+    pub(crate) fn to_result<T>(self) -> Result<Success, T> {
+        return Ok(self);
+    }
+}
+
+pub enum Action {
+    PrintHelp,
 }
 
 pub enum Error {

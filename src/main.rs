@@ -1,10 +1,13 @@
-use rex::internal::entity::{Error, Success};
+use rex::internal::entity::{Action, Error, Success};
 
 fn print_help() {
     // todo help
     // todo version
     println!("Usage: rex {{url}}");
     println!(" when url like \"https://github.com/\" is requested with default params");
+    println!();
+    println!("Or usage: rex --help");
+    println!(" prints this help info");
     println!();
     println!("Or usage: rex [options...]");
     let message = vec![
@@ -29,6 +32,13 @@ fn main() {
     match rex::on_args(&args[1..]) {
         Ok(it) => {
             match it {
+                Success::Action(action) => {
+                    match action {
+                        Action::PrintHelp => {
+                            print_help();
+                        }
+                    }
+                }
                 Success::Output(message) => {
                     println!("{message}");
                 }

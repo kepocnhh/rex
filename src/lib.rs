@@ -7,6 +7,7 @@ use internal::entity::Success;
 use internal::request::call;
 use internal::util;
 use url::Url;
+use crate::internal::entity::Action;
 
 fn get_request(args: &[String]) -> Result<Environment, Error> {
     // todo unit test
@@ -44,7 +45,7 @@ pub fn on_args(args: &[String]) -> Result<Success, Error> {
     if args.len() == 1 {
         match args[0].as_str() {
             "-h" | "--help" => {
-                todo!();
+                return Success::Action(Action::PrintHelp).to_result();
             }
             "-v" | "--version" => {
                 todo!();

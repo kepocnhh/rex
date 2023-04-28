@@ -41,6 +41,8 @@ fn get_request(args: &[String]) -> Result<Environment, Error> {
     return Ok(Environment { url, method });
 }
 
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 pub fn on_args(args: &[String]) -> Result<Success, Error> {
     if args.len() == 1 {
         match args[0].as_str() {
@@ -48,7 +50,7 @@ pub fn on_args(args: &[String]) -> Result<Success, Error> {
                 return Success::Action(Action::PrintHelp).to_result();
             }
             "-v" | "--version" => {
-                todo!();
+                return Success::Output(format!("{VERSION}")).to_result();
             }
             it if it.is_empty() => {
                 return Error::Request(format!("Value \"url\" is empty!")).to_result();

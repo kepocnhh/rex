@@ -1,13 +1,14 @@
 use rex::internal::entity::{Action, Error, Success};
 
 fn print_help() {
-    // todo help
-    // todo version
     println!("Usage: rex {{url}}");
     println!(" when url like \"https://github.com/\" is requested with default params");
     println!();
     println!("Or usage: rex --help");
     println!(" prints this help info");
+    println!();
+    println!("Or usage: rex --version");
+    println!(" prints version of rex (current is \"{}\")", rex::VERSION);
     println!();
     println!("Or usage: rex [options...]");
     let message = vec![

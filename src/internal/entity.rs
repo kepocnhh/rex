@@ -35,13 +35,13 @@ impl Error {
     }
 }
 
-pub(crate) enum Method {
+pub enum Method {
     GET,
     POST,
 }
 
 impl Method {
-    pub(crate) fn default() -> Method {
+    pub fn default() -> Method {
         return Method::GET;
     }
 
@@ -56,7 +56,7 @@ impl Method {
         return Ok(method);
     }
 
-    pub(crate) fn to_string(&self) -> &str {
+    pub fn to_string(&self) -> &str {
         return match self {
             Method::GET => "GET",
             Method::POST => "POST",

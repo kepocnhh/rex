@@ -1,4 +1,4 @@
-use rex::internal::entity::{Action, Error, Success};
+use rex::internal::entity::{Action, Error, Method, Success};
 
 fn print_help() {
     println!("Usage: rex {{url}}");
@@ -10,15 +10,17 @@ fn print_help() {
     println!("Or usage: rex --version");
     println!(" prints version of rex (current is \"{}\")", rex::VERSION);
     println!();
-    println!("Or usage: rex [options...]");
+    println!("Or usage: rex [args...]");
+    println!("{:<16}| {:<11}| Description", "Arg", "Default");
+    println!("{:<16}+-{:<11}+{}", "-".repeat(16), "-".repeat(11), "-".repeat(16));
     let message = vec![
-        (vec!["-u", "--url"], "url like \"https://github.com/\""),
-        (vec!["-m", "--method"], "method like \"GET\",\"POST\", etc. Default is \"GET\"."),
+        (vec!["-u", "--url"], "", "url like \"https://github.com/\""),
+        (vec!["-m", "--method"], Method::default().to_string(), "method like \"GET\",\"POST\", etc."),
     ].into_iter()
-        .map(|(args, message)| {
+        .map(|(args, default, message)| {
             assert!(!args.is_empty());
             assert!(!message.is_empty());
-            return format!("{:<16}| {message}", args.join(", "));
+            return format!("{:<16}| {:<11}| {message}", args.join(", "), default);
         })
         .collect::<Vec<_>>()
         .join("\n");
@@ -47,6 +49,7 @@ fn main() {
                     // noop
                 }
             }
+            std::process::exit(0);
         },
         Err(it) => {
             match it {

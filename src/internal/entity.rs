@@ -1,8 +1,8 @@
 use url::Url;
 
 pub enum Error {
-    Before(String),
-    After(String),
+    Request(String),
+    Response(String),
 }
 
 impl Error {
@@ -10,12 +10,12 @@ impl Error {
         return Err(self);
     }
 
-    pub(crate) fn before(message: &str) -> Error {
-        return Error::Before(String::from(message));
+    pub(crate) fn request(message: &str) -> Error {
+        return Error::Request(String::from(message));
     }
 
-    pub(crate) fn after(message: &str) -> Error {
-        return Error::After(String::from(message));
+    pub(crate) fn response(message: &str) -> Error {
+        return Error::Response(String::from(message));
     }
 }
 

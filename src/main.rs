@@ -30,12 +30,12 @@ fn main() {
         Ok(message) => println!("{message}"),
         Err(it) => {
             match it {
-                Error::Before(message) => {
+                Error::Request(message) => {
                     println!("{message}\n");
                     print_help();
                     std::process::exit(1);
                 }
-                Error::After(message) => {
+                Error::Response(message) => {
                     println!("{message}");
                     std::process::exit(2);
                 }

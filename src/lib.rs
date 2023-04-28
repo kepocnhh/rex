@@ -10,10 +10,10 @@ use url::Url;
 fn get_request(args: &[String]) -> Result<Environment, Error> {
     // todo unit test
     if args.is_empty() {
-        return Error::before("No arguments!").to_result();
+        return Error::request("No arguments!").to_result();
     }
     if args.len() % 2 != 0 {
-        return Error::before("Arguments error!").to_result();
+        return Error::request("Arguments error!").to_result();
     }
     let mut url: Option<Url> = None;
     let mut method: Option<Method> = None;
@@ -24,17 +24,17 @@ fn get_request(args: &[String]) -> Result<Environment, Error> {
             "-u" | "--url" => {
                 util::set_or_else(&mut url, arg, args[index + 1].clone(), |input| {
                     Url::parse(&input).map_err(|it| format!("Parse error: {it}"))
-                }).map_err(Error::Before)?;
+                }).map_err(Error::Request)?;
             }
             "-m" | "--method" => {
-                util::set_or_else(&mut method, arg, args[index + 1].clone(), Method::from).map_err(Error::Before)?;
+                util::set_or_else(&mut method, arg, args[index + 1].clone(), Method::from).map_err(Error::Request)?;
             }
             _ => {
-                return Error::Before(format!("Unknown arg {arg}!")).to_result();
+                return Error::Request(format!("Unknown arg {arg}!")).to_result();
             }
         }
     }
-    let url = url.ok_or("No url!").map_err(Error::before)?;
+    let url = url.ok_or("No url!").map_err(Error::request)?;
     let method = method.unwrap_or(Method::default());
     return Ok(Environment { url, method });
 }
@@ -49,11 +49,11 @@ pub fn on_args(args: &[String]) -> Result<String, Error> {
                 todo!();
             }
             it if it.is_empty() => {
-                return Error::Before(format!("Value \"url\" is empty!")).to_result();
+                return Error::Request(format!("Value \"url\" is empty!")).to_result();
             }
             it => {
                 let url = Url::parse(&it)
-                    .map_err(|it| format!("Parse error: {it}")).map_err(Error::Before)?;
+                    .map_err(|it| format!("Parse error: {it}")).map_err(Error::Request)?;
                 return request(Environment { url, method: Method::default() });
             }
         }

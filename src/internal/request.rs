@@ -11,11 +11,11 @@ fn ureq_error(error: ureq::Transport) -> Error {
         .filter(|it| !it.is_empty())
         .collect::<Vec<_>>()
         .join("\n");
-    return Error::After(message);
+    return Error::Response(message);
 }
 
 fn io_error(error: std::io::Error) -> Error {
-    return Error::After(format!("IO error: {error}"));
+    return Error::Response(format!("IO error: {error}"));
 }
 
 pub(crate) fn request(env: Environment) -> Result<String, Error> {

@@ -18,7 +18,7 @@ fn io_error(error: std::io::Error) -> Error {
     return Error::Response(format!("IO error: {error}"));
 }
 
-pub(crate) fn request(env: Environment) -> Result<String, Error> {
+pub(crate) fn call(env: Environment) -> Result<String, Error> {
     let agent: ureq::Agent = ureq::AgentBuilder::new().build();
     let response = agent.request(env.method.to_string(), env.url.as_str())
         .call()

@@ -1,5 +1,10 @@
 use url::Url;
 
+pub enum Success {
+    Output(String),
+    Silent,
+}
+
 pub enum Error {
     Request(String),
     Response(String),

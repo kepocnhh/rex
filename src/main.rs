@@ -1,4 +1,4 @@
-use rex::internal::entity::Error;
+use rex::internal::entity::{Error, Success};
 
 fn print_help() {
     // todo help
@@ -27,7 +27,16 @@ fn main() {
         panic!("Arguments error!");
     }
     match rex::on_args(&args[1..]) {
-        Ok(message) => println!("{message}"),
+        Ok(it) => {
+            match it {
+                Success::Output(message) => {
+                    println!("{message}");
+                }
+                Success::Silent => {
+                    // noop
+                }
+            }
+        },
         Err(it) => {
             match it {
                 Error::Request(message) => {

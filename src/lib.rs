@@ -3,7 +3,8 @@ pub mod internal;
 use internal::entity::Environment;
 use internal::entity::Error;
 use internal::entity::Method;
-use internal::request::request;
+use internal::entity::Success;
+use internal::request::call;
 use internal::util;
 use url::Url;
 
@@ -39,7 +40,7 @@ fn get_request(args: &[String]) -> Result<Environment, Error> {
     return Ok(Environment { url, method });
 }
 
-pub fn on_args(args: &[String]) -> Result<String, Error> {
+pub fn on_args(args: &[String]) -> Result<Success, Error> {
     if args.len() == 1 {
         match args[0].as_str() {
             "-h" | "--help" => {
@@ -53,10 +54,10 @@ pub fn on_args(args: &[String]) -> Result<String, Error> {
             }
             it => {
                 let url = Url::parse(&it)
-                    .map_err(|it| format!("Parse error: {it}")).map_err(Error::Request)?;
-                return request(Environment { url, method: Method::default() });
+                    .map_err(|it| Error::Request(format!("Parse error: {it}")))?;
+                return call(Environment { url, method: Method::default() }).map(Success::Output);
             }
         }
     }
-    return request(get_request(args)?);
+    return call(get_request(args)?).map(Success::Output);
 }
